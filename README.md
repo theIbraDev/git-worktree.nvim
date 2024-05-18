@@ -72,6 +72,10 @@ By default, logging is enabled for warnings and above. This can be changed by se
 `change_directory_command`: The vim command used to change to the new worktree directory.
 Set this to `tcd` if you want to only change the `pwd` for the current vim Tab.
 
+`confirm_telescope_deletions`: Default: True. When set to true, and you hit C-d,
+on a branch in telescope view, you get asked if you really want to delete that branch.
+Keep this as true if you don't want to accidentally delete a branch.
+
 `update_on_change`:  Updates the current buffer to point to the new work tree if
 the file is found in the new project. Otherwise, the following command will be run.
 
@@ -98,6 +102,7 @@ return {
             update_on_change = true, -- default: true,
             update_on_change_command = "e .", -- default: "e .",
             clearjumps_on_change = true, -- default: true,
+            confirm_telescope_deletions = true, -- Default: true,
             autopush = false -- default: false,
         })
     end
