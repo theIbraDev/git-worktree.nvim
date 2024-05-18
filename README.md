@@ -4,6 +4,9 @@ A simple wrapper around git worktree operations, create, switch, and delete.
 There is some assumed workflow within this plugin, but pull requests are welcomed to
 fix that).
 
+Don't use this if you don't use --bare repos. Telescope is much more suited for
+changing and creating branches on normal repos.
+
 <!-- mdformat-toc start --slug=github --maxlevel=6 --minlevel=1 -->
 
 - [git-worktree.nvim](#git-worktreenvim)
@@ -16,15 +19,10 @@ fix that).
   - [Usage](#usage)
   - [Telescope](#telescope)
   - [Hooks](#hooks)
-  - [Made with fury](#made-with-fury)
 
 <!-- mdformat-toc end -->
 
-## Known Issues<a name="known-issues"></a>
-There are a few known issues.  I'll try to be actively filing them in the issues.  If you experience something, and it's not an issue, feel free to make an issue!  Even if it's a dupe I am just happy for the contribution.
-
 ## Dependencies<a name="dependencies"></a>
-
 Requires NeoVim 0.5+
 Requires plenary.nvim
 Optional telescope.nvim for telescope extension
@@ -33,12 +31,15 @@ Optional telescope.nvim for telescope extension
 
 First, install the plugin the usual way you prefer.
 
-```console
-Plug 'ThePrimeagen/git-worktree.nvim'
-```
+```Lazy
+return {
+    "theIbraDev/git-worktree.nvim",
+        dependencies = {
+        'nvim-lua/plenary.nvim',
+},
+},
 
-Next, re-source your `vimrc`/`init.vim` and execute `PlugInstall` to ensure you have the plugin
-installed.
+```
 
 ## Setup<a name="setup"></a>
 
@@ -49,25 +50,22 @@ This repository does work best with a bare repo.  To clone a bare repo, do the f
 ```shell
 git clone --bare <upstream>
 ```
+### Set upstream if you use github cli
+First, check if your upstream is set correctly:
+```
+git config --get remote.origin.fetch
 
-If you do not use a bare repo, using telescope create command will be more helpful in the process of creating a branch.
+```
+if it does not return: +refs/heads/*:refs/remotes/origin/*, run the following:
+```
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+```
 
 ### Debugging
 git-worktree writes logs to a `git-worktree-nvim.log` file that resides in Neovim's cache path. (`:echo stdpath("cache")` to find where that is for you.)
 
 By default, logging is enabled for warnings and above. This can be changed by setting `vim.g.git_worktree_log_level` variable to one of the following log levels: `trace`, `debug`, `info`, `warn`, `error`, or `fatal`. Note that this would have to be done **before** git-worktree's `setup` call. Alternatively, it can be more convenient to launch Neovim with an environment variable, e.g. `> GIT_WORKTREE_NVIM_LOG=trace nvim`. In case both, `vim.g` and an environment variable are used, the log level set by the environment variable overrules. Supplying an invalid log level defaults back to warnings.
 
-### Troubleshooting
-If the upstream is not setup correctly when trying to pull or push, make sure the following command returns what is shown below. This seems to happen with the gitHub cli.
-```
-git config --get remote.origin.fetch
-
-+refs/heads/*:refs/remotes/origin/*
-```
-if it does not run the following
-```
-git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-```
 
 ## Options<a name="options"></a>
 
@@ -87,14 +85,23 @@ edit the wrong files.
 
 `autopush`: When creating a new worktree, it will push the branch to the upstream then perform a `git rebase`
 
-```lua
-require("git-worktree").setup({
-    change_directory_command = <str> -- default: "cd",
-    update_on_change = <boolean> -- default: true,
-    update_on_change_command = <str> -- default: "e .",
-    clearjumps_on_change = <boolean> -- default: true,
-    autopush = <boolean> -- default: false,
-})
+```Lazy default
+return {
+    "theIbraDev/git-worktree.nvim",
+    dependencies = {
+        'nvim-lua/plenary.nvim'
+    },
+    config = function ()
+        -- Defaults
+        require("git-worktree").setup({
+            change_directory_command = "cd", -- default: "cd", alt "tcd".
+            update_on_change = true, -- default: true,
+            update_on_change_command = "e .", -- default: "e .",
+            clearjumps_on_change = true, -- default: true,
+            autopush = false -- default: false,
+        })
+    end
+}
 ```
 
 ## Usage<a name="usage"></a>
@@ -177,8 +184,3 @@ end)
 This means that you can use [harpoon](https://github.com/ThePrimeagen/harpoon)
 or other plugins to perform follow up operations that will help in turbo
 charging your development experience!
-
-## Made with fury<a name="made-with-fury"></a>
-
-All plugins are made live on [Twitch](https://twitch.tv/ThePrimeagen) with love
-and fury.  Come and join!
